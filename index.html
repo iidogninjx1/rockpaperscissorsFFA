@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors Tournament</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-generate {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-tournament {
+            background-color: #764ba2;
+            color: white;
+        }
+
+        .btn-tournament:hover {
+            background-color: #653a85;
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+
+        .players-list {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .players-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            border-left: 4px solid #667eea;
+        }
+
+        .player-item:nth-child(even) {
+            border-left-color: #764ba2;
+        }
+
+        .player-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .player-choice {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .result-section {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Rock Paper Scissors Tournament</h1>
+        <p class="subtitle">Generate random players or manage players manually</p>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="numPlayers">Number of Players:</label>
+                <input type="number" id="numPlayers" min="2" max="100" value="5">
+            </div>
+
+            <div class="button-group">
+                <button class="btn-generate" onclick="generateRandomList()">Generate Random Players</button>
+                <button class="btn-clear" onclick="clearPlayers()">Clear</button>
+            </div>
+        </div>
+
+        <div id="errorMessage"></div>
+
+        <div class="players-list">
+            <h3>Players & Choices</h3>
+            <div id="playersList" class="empty-state">No players yet. Generate random players or add manually.</div>
+        </div>
+
+        <button class="btn-tournament" style="width: 100%; font-size: 1.1em;" onclick="runTournament()">Run Tournament</button>
+
+        <div id="resultSection"></div>
+    </div>
+
+    <script src="stuff.js"></script>
+    <script>
+        let playerList = [];
+
+        function generateRandomList() {
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            
+            if (isNaN(numPlayers) || numPlayers < 2) {
+                showError('Please enter a valid number of players (minimum 2)');
+                return;
+            }
+
+            if (numPlayers > 100) {
+                showError('Maximum 100 players allowed');
+                return;
+            }
+
+            clearError();
+            playerList = [];
+            const choices = ['Rock', 'Paper', 'Scissors'];
+
+            for (let i = 0; i < numPlayers; i++) {
+                playerList.push(choices[Math.floor(Math.random() * choices.length)]);
+            }
+
+            displayPlayers();
+        }
+
+        function displayPlayers() {
+            const playersList = document.getElementById('playersList');
+            
+            if (playerList.length === 0) {
+                playersList.innerHTML = '<div class="empty-state">No players yet. Generate random players or add manually.</div>';
+                return;
+            }
+
+            let html = '';
+            playerList.forEach((choice, index) => {
+                html += `
+                    <div class="player-item">
+                        <span class="player-name">Player ${index + 1}</span>
+                        <span class="player-choice">${choice}</span>
+                    </div>
+                `;
+            });
+
+            playersList.innerHTML = html;
+        }
+
+        function runTournament() {
+            if (playerList.length === 0) {
+                showError('Please generate players first');
+                return;
+            }
+
+            clearError();
+            const resultSection = document.getElementById('resultSection');
+            
+            // Calculate tournament results
+            let rocks = 0, scissors = 0, papers = 0;
+            
+            // Count choices
+            for (let i = 0; i < playerList.length; i++) {
+                if (playerList[i] == "Rock") rocks++;
+                else if (playerList[i] == "Scissors") scissors++;
+                else if (playerList[i] == "Paper") papers++;
+            }
+            
+            // Determine winner with proper comparison logic
+            let winner = '';
+            if (rocks > scissors && rocks > papers) {
+                winner = `🪨 The Rocks win with a score of: ${rocks}`;
+            } else if (scissors > rocks && scissors > papers) {
+                winner = `✂️ The Scissors win with a score of: ${scissors}`;
+            } else if (papers > rocks && papers > scissors) {
+                winner = `📄 The Papers win with a score of: ${papers}`;
+            } else {
+                winner = `🤝 Draw!`;
+            }
+            
+            // Display detailed results
+            resultSection.innerHTML = `
+                <div class="result-section">
+                    <h3>Tournament Breakdown:</h3>
+                    <div style="margin-bottom: 15px; font-size: 0.95em;">
+                        <p><strong>🪨 Rocks:</strong> ${rocks}</p>
+                        <p><strong>✂️ Scissors:</strong> ${scissors}</p>
+                        <p><strong>📄 Papers:</strong> ${papers}</p>
+                    </div>
+                    <h3>Winner:</h3>
+                    <div class="result-text">${winner}</div>
+                </div>
+            `;
+            
+            // Also log to console for debugging
+            console.log('Tournament Results:', {
+                rocks,
+                scissors,
+                papers,
+                winner
+            });
+        }
+
+        function clearPlayers() {
+            playerList = [];
+            clearError();
+            document.getElementById('resultSection').innerHTML = '';
+            displayPlayers();
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('errorMessage').innerHTML = '';
+        }
+
+        // Display initial state
+        displayPlayers();
+    </script>
+</body>
+</html>
